@@ -1,0 +1,40 @@
+name: Sobelow annotations
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  sobelow:
+    name: Sobelow
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Check out annotation repro
+        uses: actions/checkout@v4
+        with:
+          path: sobelow_annotation_repro
+
+      - name: Check out Sobelow formatter branch
+        uses: actions/checkout@v4
+        with:
+          repository: katafrakt/sobelow
+          ref: github-workflow-annotations
+          path: sobelow
+
+      - name: Set up Elixir
+        uses: erlef/setup-beam@v1
+        with:
+          elixir-version: "1.18"
+          otp-version: "27"
+
+      - name: Install dependencies
+        working-directory: sobelow_annotation_repro
+        run: mix deps.get
+
+      - name: Run Sobelow
+        working-directory: sobelow_annotation_repro
+        run: mix sobelow --no-router --private --format github --exit low
